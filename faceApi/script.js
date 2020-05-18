@@ -15,7 +15,10 @@ function startVideo() {
 }
 video.addEventListener("play", () => {
   // console.log("ssd");
+  const canvas = faceapi.createCanvasFromMedia(video);
+  document.body.append(canvas);
   const displaySize = { width: 720, height: 560 };
+
   setInterval(async () => {
     const detections = await faceapi
       .detectAllFaces(
@@ -23,8 +26,11 @@ video.addEventListener("play", () => {
         new faceapi.TinyFaceDetectorOptions({ inputSize: 224 })
       )
       .withFaceLandmarks();
+    faceapi.matchDimensions(canvas, displaySize);
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
-    socket.emit('detect', resizedDetections);
+    socket.emit("detect", resizedDetections);
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    faceapi.draw.drawDetections(canvas, resizedDetections);
     console.log(resizedDetections);
     // console.log(resizedDetections[0].landmarks.positions[31]);
   }, 10);
